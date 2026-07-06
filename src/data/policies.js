@@ -1,0 +1,65 @@
+// 지표 이름은 게임 전체에서 같은 키를 사용합니다.
+export const policies = [
+  {
+    id: 'corridor',
+    name: '생태통로 건설',
+    description: '단절된 서식지를 연결해 야생동물의 이동을 돕습니다.',
+    cost: 20,
+    effects: { biodiversity: 8, satisfaction: -3, endangered: -1 },
+    suitableFor: ['forest'],
+    icon: 'Route',
+  },
+  {
+    id: 'invasive',
+    name: '외래종 제거',
+    description: '토착 생물을 위협하는 외래종을 집중 관리합니다.',
+    cost: 15,
+    effects: { biodiversity: 6, water: 3, endangered: -1 },
+    suitableFor: ['forest', 'river'],
+    icon: 'BugOff',
+  },
+  {
+    id: 'wetland',
+    name: '습지 복원',
+    description: '사라진 습지를 되살려 탄소와 물을 품게 합니다.',
+    cost: 30,
+    effects: { carbon: 10, water: 8, endangered: -1 },
+    suitableFor: ['wetland'],
+    icon: 'Waves',
+  },
+  {
+    id: 'pollution',
+    name: '오염원 단속',
+    description: '오염 배출을 점검하고 수질 기준을 강화합니다.',
+    cost: 10,
+    effects: { water: 10, satisfaction: -2 },
+    suitableFor: ['river'],
+    icon: 'ShieldCheck',
+  },
+  {
+    id: 'education',
+    name: '환경교육 캠페인',
+    description: '시민 참여를 이끌어 복원 사업의 지지를 넓힙니다.',
+    cost: 8,
+    effects: { satisfaction: 8, biodiversity: 2 },
+    suitableFor: [],
+    icon: 'Megaphone',
+  },
+  {
+    id: 'reserve',
+    name: '보호구역 지정',
+    description: '핵심 서식지를 법적으로 보호하고 개발을 제한합니다.',
+    cost: 12,
+    effects: { biodiversity: 7, satisfaction: -5, endangered: -2 },
+    suitableFor: ['forest', 'wetland'],
+    icon: 'Trees',
+  },
+]
+
+export const metricLabels = {
+  biodiversity: '생물다양성',
+  carbon: '탄소흡수',
+  water: '수질',
+  satisfaction: '시민 만족도',
+  endangered: '멸종위기종',
+}
