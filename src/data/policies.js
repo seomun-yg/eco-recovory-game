@@ -8,6 +8,7 @@ export const policies = [
     effects: { biodiversity: 8, satisfaction: -3, endangered: -1 },
     suitableFor: ['forest'],
     icon: 'Route',
+    timing: { start: 1, end: 4, label: '초반 특화' },
   },
   {
     id: 'invasive',
@@ -17,6 +18,7 @@ export const policies = [
     effects: { biodiversity: 6, water: 3, endangered: -1 },
     suitableFor: ['forest', 'river'],
     icon: 'BugOff',
+    timing: { start: 1, end: 5, label: '초·중반 특화' },
   },
   {
     id: 'wetland',
@@ -26,6 +28,7 @@ export const policies = [
     effects: { carbon: 10, water: 8, endangered: -1 },
     suitableFor: ['wetland'],
     icon: 'Waves',
+    timing: { start: 3, end: 7, label: '중반 특화' },
   },
   {
     id: 'pollution',
@@ -35,6 +38,7 @@ export const policies = [
     effects: { water: 10, satisfaction: -2 },
     suitableFor: ['river'],
     icon: 'ShieldCheck',
+    timing: { start: 1, end: 4, label: '초반 특화' },
   },
   {
     id: 'education',
@@ -44,6 +48,7 @@ export const policies = [
     effects: { satisfaction: 8, biodiversity: 2 },
     suitableFor: [],
     icon: 'Megaphone',
+    timing: { start: 1, end: 3, label: '초반 특화' },
   },
   {
     id: 'reserve',
@@ -53,6 +58,47 @@ export const policies = [
     effects: { biodiversity: 7, satisfaction: -5, endangered: -2 },
     suitableFor: ['forest', 'wetland'],
     icon: 'Trees',
+    timing: { start: 5, end: 10, label: '중·후반 특화' },
+  },
+  {
+    id: 'citizen-monitoring',
+    name: '시민 생태 모니터링단',
+    description: '주민이 직접 생물종을 관찰하며 복원 과정의 신뢰를 높입니다.',
+    cost: 9,
+    effects: { satisfaction: 7, biodiversity: 3 },
+    suitableFor: [],
+    icon: 'Users',
+    timing: { start: 1, end: 4, label: '초반 특화' },
+  },
+  {
+    id: 'eco-trail',
+    name: '친환경 탐방로 조성',
+    description: '훼손을 최소화한 탐방 공간을 만들어 시민의 접근성을 높입니다.',
+    cost: 16,
+    effects: { satisfaction: 10, biodiversity: 2, carbon: 2 },
+    suitableFor: ['forest', 'wetland'],
+    icon: 'Footprints',
+    timing: { start: 4, end: 7, label: '중반 특화' },
+  },
+  {
+    id: 'local-market',
+    name: '지역 생태상생 마켓',
+    description: '지역 생산자와 복원 사업을 연결해 주민 체감 혜택을 만듭니다.',
+    cost: 11,
+    effects: { satisfaction: 9, carbon: 3 },
+    suitableFor: ['river', 'wetland'],
+    icon: 'Store',
+    timing: { start: 5, end: 8, label: '중반 특화' },
+  },
+  {
+    id: 'eco-festival',
+    name: '복원 성과 시민 축제',
+    description: '회복된 자연과 성과를 시민에게 공개해 장기적인 지지를 얻습니다.',
+    cost: 8,
+    effects: { satisfaction: 12, biodiversity: 1 },
+    suitableFor: [],
+    icon: 'PartyPopper',
+    timing: { start: 8, end: 10, label: '후반 특화' },
   },
 ]
 

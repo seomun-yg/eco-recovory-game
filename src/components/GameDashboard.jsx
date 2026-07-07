@@ -9,13 +9,13 @@ import StatusCards from './StatusCards.jsx'
 
 export default function GameDashboard({
   year, budget, metrics, ecosystem, difficulty, selectedPolicy,
-  policyHistory, eventHistory, analysis, executing, onSelectPolicy, onExecute, onSkip, onReset,
+  policyHistory, eventHistory, analysis, executing, animationPhase, onSelectPolicy, onExecute, onSkip, onReset,
 }) {
   const progress = ((year - 1) / 10) * 100
   const affordable = policies.some((policy) => policy.cost <= budget)
 
   return (
-    <main className="min-h-screen bg-[#f4f6f1]">
+    <main className={`game-board min-h-screen ${animationPhase !== 'idle' ? `board-${animationPhase}` : ''}`}>
       <header className="game-header">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
           <div className="flex items-center gap-3">
@@ -27,13 +27,14 @@ export default function GameDashboard({
       </header>
 
       <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8 sm:py-8">
-        <section className="mb-5 grid items-center gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-[1fr_auto_auto]">
+        <section className="board-hud mb-5 grid items-center gap-4 sm:grid-cols-[1fr_auto_auto]">
           <div>
             <div className="flex items-end justify-between">
               <div className="flex items-center gap-2"><CalendarDays size={18} className="text-emerald-700" /><strong className="font-display text-xl">{year}년 차</strong><span className="text-sm text-slate-400">/ 10년</span></div>
               <span className="text-xs font-semibold text-emerald-700 sm:hidden">{Math.round(progress)}%</span>
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${progress}%` }} /></div>
+            <div className="round-track">{Array.from({ length: 10 }).map((_, index) => <i key={index} className={index + 1 <= year ? 'round-active' : ''}>{index + 1}</i>)}</div>
           </div>
           <div className="stat-pill"><Coins size={20} /><div><span>남은 예산 · 매년 +10억</span><strong>{budget}억</strong></div></div>
           <div className="stat-pill stat-pill-dark"><Leaf size={20} /><div><span>건강 점수</span><strong>{calculateHealth(metrics)}점</strong></div></div>
@@ -63,13 +64,15 @@ export default function GameDashboard({
               <div><span className="eyebrow">YEAR {String(year).padStart(2, '0')}</span><h2>올해의 복원 정책을 선택하세요</h2></div>
               <p className="hidden text-xs text-slate-400 sm:block">정책은 매년 한 번 실행됩니다</p>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {policies.map((policy) => (
                 <PolicyCard
                   key={policy.id}
                   policy={policy}
                   ecosystem={ecosystem}
+                  year={year}
                   selected={selectedPolicy?.id === policy.id}
+                  dimmed={Boolean(selectedPolicy && selectedPolicy.id !== policy.id)}
                   disabled={policy.cost > budget || executing}
                   onSelect={onSelectPolicy}
                 />

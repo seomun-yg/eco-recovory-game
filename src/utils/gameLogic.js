@@ -37,18 +37,23 @@ export function createInitialMetrics(ecosystem) {
 }
 
 // 적합한 생태계에서는 좋은 효과만 20% 높입니다. 불이익은 그대로 유지합니다.
-export function getPolicyEffects(policy, ecosystem) {
+export function isPolicyInSeason(policy, year) {
+  return !policy.timing || (year >= policy.timing.start && year <= policy.timing.end)
+}
+
+export function getPolicyEffects(policy, ecosystem, year = 1) {
   const isSuitable = policy.suitableFor.includes(ecosystem)
+  const timingMultiplier = isPolicyInSeason(policy, year) ? 1.25 : 0.9
   return Object.fromEntries(
     Object.entries(policy.effects).map(([key, amount]) => [
       key,
-      isSuitable && amount > 0 ? Math.round(amount * 1.2) : amount,
+      amount > 0 ? Math.round(amount * (isSuitable ? 1.2 : 1) * timingMultiplier) : amount,
     ]),
   )
 }
 
-export function applyPolicy(metrics, policy, ecosystem) {
-  return applyEffects(metrics, getPolicyEffects(policy, ecosystem))
+export function applyPolicy(metrics, policy, ecosystem, year = 1) {
+  return applyEffects(metrics, getPolicyEffects(policy, ecosystem, year))
 }
 
 // 먼저 긍정/부정 사건을 난이도 확률로 결정한 뒤 해당 그룹에서 하나를 뽑습니다.

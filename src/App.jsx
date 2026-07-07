@@ -2,6 +2,7 @@ import { useState } from 'react'
 import FinalReport from './components/FinalReport.jsx'
 import GameDashboard from './components/GameDashboard.jsx'
 import StartScreen from './components/StartScreen.jsx'
+import TurnOverlay from './components/TurnOverlay.jsx'
 import { applyEffects, applyPolicy, calculateHealth, createInitialMetrics, DIFFICULTIES, drawEvent, getFinalResult } from './utils/gameLogic.js'
 import { createFinalAnalysis, createYearAnalysis } from './utils/mockAIReport.js'
 
@@ -20,6 +21,8 @@ export default function App() {
   const [analysis, setAnalysis] = useState('')
   const [finalData, setFinalData] = useState(null)
   const [executing, setExecuting] = useState(false)
+  const [animationPhase, setAnimationPhase] = useState('idle')
+  const [lastTurn, setLastTurn] = useState(null)
 
   const startGame = () => {
     const startingMetrics = createInitialMetrics(ecosystem)
@@ -33,12 +36,14 @@ export default function App() {
     setEventHistory([])
     setAnalysis('')
     setFinalData(null)
+    setAnimationPhase('idle')
+    setLastTurn(null)
     setScreen('game')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const advanceYear = (policy) => {
-    if (policy && policy.cost > budget || executing) return
+    if ((policy && policy.cost > budget) || executing) return
     setExecuting(true)
 
     const playedPolicy = policy || {
@@ -48,36 +53,65 @@ export default function App() {
       effects: {},
       suitableFor: [],
     }
-    const afterPolicy = policy ? applyPolicy(metrics, policy, ecosystem) : metrics
+    const afterPolicy = policy ? applyPolicy(metrics, policy, ecosystem, year) : metrics
     const event = drawEvent(DIFFICULTIES[difficulty].negativeChance)
     const afterEvent = applyEffects(afterPolicy, event.effects)
     const nextPolicies = [...policyHistory, { year, policy: playedPolicy }]
     const nextEvents = [...eventHistory, { year, event }]
     const yearAnalysis = createYearAnalysis(metrics, afterEvent, playedPolicy, event)
+    const deltas = Object.fromEntries(Object.keys(afterEvent).map((key) => [key, afterEvent[key] - metrics[key]]))
+    const policyDeltas = Object.fromEntries(Object.keys(afterPolicy).map((key) => [key, afterPolicy[key] - metrics[key]]))
+    const eventDeltas = Object.fromEntries(Object.keys(afterEvent).map((key) => [key, afterEvent[key] - afterPolicy[key]]))
 
-    // 정책 비용을 지불한 뒤 매년 운영 지원금 10억을 회복합니다.
-    setBudget((current) => Math.max(0, current - playedPolicy.cost) + 10)
-    setMetrics(afterEvent)
-    setPolicyHistory(nextPolicies)
-    setEventHistory(nextEvents)
-    setAnalysis(yearAnalysis)
-    setSelectedPolicy(null)
+    setLastTurn({
+      year,
+      policy: playedPolicy,
+      event,
+      deltas,
+      policyDeltas,
+      eventDeltas,
+      outcome: { afterEvent, nextPolicies, nextEvents, yearAnalysis },
+    })
+    setAnimationPhase('policy')
 
-    // 짧은 지연은 버튼 연타를 막고 결과가 갱신되는 느낌을 줍니다.
     window.setTimeout(() => {
-      // 다음 연도 또는 최종 결과가 항상 페이지 최상단에서 시작되게 합니다.
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      if (year === 10) {
+      setBudget((current) => Math.max(0, current - playedPolicy.cost) + 10)
+      setAnimationPhase('budget')
+    }, 220)
+    window.setTimeout(() => {
+      setMetrics(afterEvent)
+      setAnimationPhase('changes')
+    }, 470)
+    window.setTimeout(() => {
+      setPolicyHistory(nextPolicies)
+      setEventHistory(nextEvents)
+      setAnalysis(yearAnalysis)
+      setAnimationPhase('event')
+    }, 720)
+  }
+
+  const resumeAfterEvent = () => {
+    if (animationPhase !== 'event' || !lastTurn?.outcome) return
+    const { afterEvent, nextPolicies } = lastTurn.outcome
+    const completedYear = lastTurn.year
+
+    setSelectedPolicy(null)
+    setAnimationPhase('year')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    window.setTimeout(() => {
+      if (completedYear === 10) {
         setFinalData({
           result: getFinalResult(afterEvent, initialHealth),
           report: createFinalAnalysis(initialMetrics, afterEvent, nextPolicies),
         })
         setScreen('final')
       } else {
-        setYear((current) => current + 1)
+        setYear(completedYear + 1)
       }
       setExecuting(false)
-    }, 350)
+      setAnimationPhase('idle')
+    }, 360)
   }
 
   const executeYear = () => {
@@ -91,6 +125,8 @@ export default function App() {
     setScreen('start')
     setExecuting(false)
     setFinalData(null)
+    setAnimationPhase('idle')
+    setLastTurn(null)
   }
 
   if (screen === 'start') {
@@ -101,5 +137,5 @@ export default function App() {
     return <FinalReport ecosystem={ecosystem} initialMetrics={initialMetrics} metrics={metrics} result={finalData.result} report={finalData.report} policyHistory={policyHistory} eventHistory={eventHistory} onReset={resetGame} />
   }
 
-  return <GameDashboard year={year} budget={budget} metrics={metrics} ecosystem={ecosystem} difficulty={difficulty} selectedPolicy={selectedPolicy} policyHistory={policyHistory} eventHistory={eventHistory} analysis={analysis} executing={executing} onSelectPolicy={setSelectedPolicy} onExecute={executeYear} onSkip={skipYear} onReset={resetGame} />
+  return <><GameDashboard year={year} budget={budget} metrics={metrics} ecosystem={ecosystem} difficulty={difficulty} selectedPolicy={selectedPolicy} policyHistory={policyHistory} eventHistory={eventHistory} analysis={analysis} executing={executing} animationPhase={animationPhase} onSelectPolicy={setSelectedPolicy} onExecute={executeYear} onSkip={skipYear} onReset={resetGame} /><TurnOverlay phase={animationPhase} turn={lastTurn} onResume={resumeAfterEvent} /></>
 }

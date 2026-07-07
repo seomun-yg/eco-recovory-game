@@ -1,13 +1,14 @@
-import { BugOff, Leaf, Megaphone, Route, ShieldCheck, Trees, Waves } from 'lucide-react'
+import { BugOff, Footprints, Leaf, Megaphone, PartyPopper, Route, ShieldCheck, Store, Trees, Users, Waves } from 'lucide-react'
 import { metricLabels } from '../data/policies.js'
-import { getPolicyEffects } from '../utils/gameLogic.js'
+import { getPolicyEffects, isPolicyInSeason } from '../utils/gameLogic.js'
 
-export default function PolicyCard({ policy, ecosystem, selected, disabled, onSelect }) {
+export default function PolicyCard({ policy, ecosystem, year, selected, dimmed, disabled, onSelect }) {
   // 필요한 아이콘만 명시적으로 연결해 최종 번들 크기를 작게 유지합니다.
-  const iconMap = { BugOff, Megaphone, Route, ShieldCheck, Trees, Waves }
+  const iconMap = { BugOff, Footprints, Megaphone, PartyPopper, Route, ShieldCheck, Store, Trees, Users, Waves }
   const Icon = iconMap[policy.icon] || Leaf
-  const effects = getPolicyEffects(policy, ecosystem)
+  const effects = getPolicyEffects(policy, ecosystem, year)
   const suitable = policy.suitableFor.includes(ecosystem)
+  const inSeason = isPolicyInSeason(policy, year)
 
   return (
     <button
@@ -15,11 +16,14 @@ export default function PolicyCard({ policy, ecosystem, selected, disabled, onSe
       onClick={() => onSelect(policy)}
       disabled={disabled}
       aria-pressed={selected}
-      className={`policy-card ${selected ? 'policy-card-selected' : ''} ${disabled ? 'policy-card-disabled' : ''}`}
+      className={`policy-card ${selected ? 'policy-card-selected' : ''} ${dimmed ? 'policy-card-dimmed' : ''} ${disabled ? 'policy-card-disabled' : ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <span className="policy-icon"><Icon size={23} /></span>
-        <span className="cost-chip">{policy.cost}억</span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="cost-chip">{policy.cost}억</span>
+          <span className={`timing-chip ${inSeason ? 'timing-active' : ''}`}>{policy.timing.label} · {inSeason ? '효과 +25%' : '효과 -10%'}</span>
+        </div>
       </div>
       <div className="mt-4">
         <div className="flex items-center gap-2">
